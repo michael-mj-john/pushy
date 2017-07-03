@@ -3,12 +3,13 @@
 Adafruit_NeoPixel strand( 120, 7, NEO_GRB+NEO_KHZ800);
 int sensorValue;
 int normalValue=0;
-int topPixel = 0;
+int leftPixel = 0;
+int rightPixel = 119;
 bool flashOn = 0;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(3,INPUT);
+  pinMode(4,INPUT);
   pinMode(7,OUTPUT);
   strand.begin();
 }
@@ -17,9 +18,9 @@ void loop() {
 
   sensorValue = analogRead(A0);
 
-  if( digitalRead( 3 ) == LOW ) {
+  if( digitalRead( 4 ) == LOW ) {
     normalValue = sensorValue;
-    topPixel = 0;
+    leftPixel = 0;
   }
   Serial.print(sensorValue-normalValue);
   Serial.print(", ");
@@ -29,17 +30,16 @@ void loop() {
     else { strand.setPixelColor( 0, 0, 0, 0 ); flashOn = 0; }
   }
   else {
-    for( int i=0; i< 120; i++ ) {
-      if( i > topPixel ) { strand.setPixelColor(i, 0, 0, 0); }
-      else { strand.setPixelColor( i, 255, 0, 0 ); }
-    }
+    ledUpdate();
   }
-  strand.show();
 
-  if( sensorValue - normalValue > 100 ) { topPixel = min(topPixel + 1, 120); }
-  if( sensorValue - normalValue > 200 ) { topPixel = min(topPixel + 1, 120); }
-  if( sensorValue - normalValue > 250 ) { topPixel = min(topPixel + 1, 120); }
-  else { topPixel = max(topPixel-1, 0 ); }
+  if( sensorValue - normalValue > 100 ) { leftPixel = min(leftPixel + 1, 120); }
+  if( sensorValue - normalValue > 200 ) { leftPixel = min(leftPixel + 1, 120); }
+  if( sensorValue - normalValue > 250 ) { leftPixel = min(leftPixel + 1, 120); }
+  else { leftPixel = max(leftPixel-1, 0 ); }
+  if( leftPixel >= rightPixel ) { 
+    sensorValueL > sensorValueR ? rightPixel = leftPixel : leftPixel = rightPixel;
+  }
 
   Serial.print( normalValue );
   Serial.print( "\n" );
