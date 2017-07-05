@@ -9,6 +9,7 @@ int sensorValueR;
 int normalValueL = 0;
 int normalValueR = 0;
 
+bool gameStart= 0; 
 bool flashOn = 0;
 
 void setup() {
@@ -17,6 +18,11 @@ void setup() {
   pinMode(4, INPUT); // button R
   pinMode(7,OUTPUT); // lights
   strand.begin();
+
+  for(int i = 0; i < 119; ++i) { strand.setPixelColor(i, 0, 0, 0); } // middle pixels 
+  strand.setPixelColor(0, 0, 0, 255);
+  strand.setPixelColor(119, 0, 0, 255);
+  strand.show();
 }
 
 void loop() {
@@ -28,13 +34,13 @@ void loop() {
   // left button is pressed, set normal value at left end
   if( digitalRead(3) == LOW ) {
     normalValueL = sensorValueL;
-    leftPixel = 0;
+    //leftPixel = 0;
   }
 
   // right button is pressed, set normal value at right end
   if( digitalRead(4) == LOW) {
     normalValueR = sensorValueR;
-    rightPixel = 119;
+    //rightPixel = 119;
   }
   
   Serial.print(sensorValueL-normalValueL);
@@ -42,23 +48,37 @@ void loop() {
   Serial.print(sensorValueR-normalValueR); 
   Serial.print("\n");
 
-  // buttons have not been pressed, blink light at each end
-  if( normalValueL == 0  && normalValueR ==0) { 
-    if( flashOn == 0 ) { 
-      strand.setPixelColor( 0, 0, 0, 255 ); 
-      strand.setPixelColor( 119, 0, 0, 255);
+
+// -------------------- THIS NEEDS FIXING -----------------
+  if(!gameStart)
+  {
+    if(flashOn)
+    {
+      if(normalValueL == 0) strand.setPixelColor( 0, 0, 0, 255 ); 
+      if(normalValueR == 0) strand.setPixelColor( 119, 0, 0, 255);
+      flashOn = 0; 
+    } else  { 
+      if(normalValueL == 0) strand.setPixelColor( 0, 0, 255, 255 ); 
+      if(normalValueR == 0) strand.setPixelColor(119, 0, 255, 255);
       flashOn = 1; 
     }
-    else  { 
-      strand.setPixelColor( 0, 0, 0, 0 ); 
-      strand.setPixelColor(119, 0, 0, 0);
-      flashOn = 0; 
+
+    if(normalValueL != 0) strand.setPixelColor(0, 255, 0, 0);
+    if(normalValueR != 0) strand.setPixelColor(119, 0, 255, 0);
+
+    strand.show();
+
+    if(normalValueL != 0 && normalValueR != 0)
+    {
+      gameStart = 1;
     }
-  }
+  } // ---------------------------------------------------
   else {
+    Serial.print("BEGIN");
     playerUpdate(); // update the state of both players
     ledUpdate(); // Pixels update
   }
+
 
   delay(200);
   

@@ -1,17 +1,27 @@
 void playerUpdate( void ) {
 
+  int playerL = sensorValueL - normalValueL;
+  int playerR = sensorValueR - normalValueR;
+
 // update left player
-  if( sensorValueL - normalValueL > 100 ) { leftPixel = min(leftPixel + 1, 119); }
-  if( sensorValueL - normalValueL > 200 ) { leftPixel = min(leftPixel + 1, 119); }
-  if( sensorValueL - normalValueL > 250 ) { leftPixel = min(leftPixel + 1, 119); }
-  if( sensorValueL - normalValueL < 100 ) { leftPixel = max(leftPixel - 1, 0 ); }
+  if( playerL < 100 ) { leftPixel = max(leftPixel - 1, 0 ); } 
+  else {
+    if( playerL > 100 ) { leftPixel = min(leftPixel + 1, 119); }
+    if( playerL > 200 ) { leftPixel = min(leftPixel + 1, 119); }
+    if( playerL > 250 ) { leftPixel = min(leftPixel + 1, 119); }
+  }
+
+
 // update right player
-  if( sensorValueR - normalValueR > 100 ) { rightPixel = max(rightPixel - 1, 0); }
-  if( sensorValueR - normalValueR > 200 ) { rightPixel = max(rightPixel - 1, 0); }
-  if( sensorValueR - normalValueR > 250 ) { rightPixel = max(rightPixel - 1, 0); }
-  if( sensorValueR - normalValueR < 100 ) { rightPixel = min(rightPixel +1, 119); }
+  if( playerR < 100 ) { rightPixel = min(rightPixel +1, 119); }
+  else {
+    if( playerR > 100 ) { rightPixel = max(rightPixel - 1, 0); }
+    if( playerR > 200 ) { rightPixel = max(rightPixel - 1, 0); }
+    if( playerR > 250 ) { rightPixel = max(rightPixel - 1, 0); }    
+  }
+
   if( leftPixel >= rightPixel ) { 
-    sensorValueL - normalValueL > sensorValueR - normalValueR ? rightPixel = leftPixel : leftPixel = rightPixel;
+    playerL > playerR ? rightPixel = leftPixel : leftPixel = rightPixel;
   }
 
   Serial.print( leftPixel );

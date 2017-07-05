@@ -1,5 +1,16 @@
 void ledUpdate ( void ) {
+ 
+  for(int i = 0; i <= leftPixel; ++i) { strand.setPixelColor(i, 255, 0, 0); } // left player
+  for(int i = 119; i >= rightPixel; --i) { strand.setPixelColor(i, 0, 255, 0); } //right player
+
+  if(leftPixel == rightPixel) { strand.setPixelColor(leftPixel, 255, 255, 255); } // white pixel where left and right meet
+  for(int i = leftPixel + 1; i < rightPixel; ++i) { strand.setPixelColor(i, 0, 0, 0); } // middle pixels 
   
+  strand.show();
+}
+
+
+  /*
   // update left player
   for( int i=0; i< 120; i++ ) {
       if( i > leftPixel ) { strand.setPixelColor(i, 0, 0, 0); }
@@ -15,6 +26,4 @@ void ledUpdate ( void ) {
   if( leftPixel == rightPixel ) {
     strand.setPixelColor(leftPixel, 255, 255, 255 );
   }
-
-  strand.show();
-}
+  */
