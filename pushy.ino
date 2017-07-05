@@ -2,84 +2,92 @@
 
 Adafruit_NeoPixel strand( 120, 7, NEO_GRB+NEO_KHZ800);
 
-int leftPixel = 0;
-int rightPixel = 119;
-int sensorValueL;
-int sensorValueR;
-int normalValueL = 0;
-int normalValueR = 0;
+int leftPixel = 0;    // index of left pixel
+int leftSensor;       // input from left sensor
+int leftNormal = 0;   // normal value for left player
 
-bool gameStart= 0; 
-bool flashOn = 0;
+int rightPixel = 119; // index of right pixel
+int rightSensor;      // input from right sensor
+int rightNormal = 0;  // normal value for right player 
+
+bool gameStart = 0; // game state
+bool flashOn = 0; // flash indicator
 
 void setup() {
   Serial.begin(9600);
-  pinMode(3,INPUT); // button L
-  pinMode(4, INPUT); // button R
+  pinMode(3,INPUT); // left button 
+  pinMode(4, INPUT); // right button
   pinMode(7,OUTPUT); // lights
   strand.begin();
-
-  for(int i = 0; i < 119; ++i) { strand.setPixelColor(i, 0, 0, 0); } // middle pixels 
-  strand.setPixelColor(0, 0, 0, 255);
-  strand.setPixelColor(119, 0, 0, 255);
-  strand.show();
 }
 
 void loop() {
 
   // read sensor input
-  sensorValueL = analogRead(A0);
-  sensorValueR = analogRead(A1);
+  leftSensor = analogRead(A0);
+  rightSensor = analogRead(A1);
 
-  // left button is pressed, set normal value at left end
-  if( digitalRead(3) == LOW ) {
-    normalValueL = sensorValueL;
-    //leftPixel = 0;
-  }
-
-  // right button is pressed, set normal value at right end
-  if( digitalRead(4) == LOW) {
-    normalValueR = sensorValueR;
-    //rightPixel = 119;
-  }
+  Serial.print( leftSensor - leftNormal );
+  Serial.print( ", " );
+  Serial.print( rightSensor - rightNormal);
+  Serial.print( "\n" );
   
-  Serial.print(sensorValueL-normalValueL);
-  Serial.print(", ");
-  Serial.print(sensorValueR-normalValueR); 
-  Serial.print("\n");
-
-
-// -------------------- THIS NEEDS FIXING -----------------
   if(!gameStart)
   {
+     // set normal values with button presses
+    if( digitalRead(3) == LOW ) leftNormal = leftSensor;
+    if( digitalRead(4) == LOW) rightNormal = rightSensor;
+
+    // flash pixels at each end
     if(flashOn)
     {
-      if(normalValueL == 0) strand.setPixelColor( 0, 0, 0, 255 ); 
-      if(normalValueR == 0) strand.setPixelColor( 119, 0, 0, 255);
+      if(leftNormal == 0) strand.setPixelColor( 0, 0, 0, 255 ); 
+      if(rightNormal == 0) strand.setPixelColor( 119, 0, 0, 255);
       flashOn = 0; 
     } else  { 
-      if(normalValueL == 0) strand.setPixelColor( 0, 0, 255, 255 ); 
-      if(normalValueR == 0) strand.setPixelColor(119, 0, 255, 255);
+      if(leftNormal == 0) strand.setPixelColor( 0, 0, 255, 255 ); 
+      if(rightNormal == 0) strand.setPixelColor(119, 0, 255, 255);
       flashOn = 1; 
     }
 
-    if(normalValueL != 0) strand.setPixelColor(0, 255, 0, 0);
-    if(normalValueR != 0) strand.setPixelColor(119, 0, 255, 0);
+    // if a button has been pressed, stop flashing
+    if(leftNormal != 0) strand.setPixelColor(0, 255, 0, 0);
+    if(rightNormal != 0) strand.setPixelColor(119, 0, 255, 0);
 
-    strand.show();
-
-    if(normalValueL != 0 && normalValueR != 0)
-    {
-      gameStart = 1;
-    }
-  } // ---------------------------------------------------
+    // both buttons have been pressed
+    if(leftNormal != 0 && rightNormal != 0) gameStart = 1;
+  } 
   else {
-    Serial.print("BEGIN");
     playerUpdate(); // update the state of both players
     ledUpdate(); // Pixels update
+
+    /* NEEDS FIXING --------------------------------------------------------------------
+    // check for win
+    if(leftPixel == 119 || rightPixel == 0)
+    {
+      if(flashOn)
+      {
+        for(int i = 0; i < 119; ++i) strand.setPixelColor(i, 0, 0, 0);
+      } else {
+        if(leftPixel == 119) //left side wins 
+        {
+          for(int i = 0; i < 119; ++i) strand.setPixelColor(i, 255, 0, 0);
+        } 
+        else if (rightPixel == 0) //right side wins
+        {
+          for(int i = 0; i < 119; ++i) strand.setPixelColor(i, 0, 255, 0);
+        }
+      }
+  
+    gameStart = 0;
+    leftNormal = 0;
+    rightNormal = 0;      
+    }
+
+    */ ----------------------------------------------------------------------------------
   }
 
-
+  strand.show();
   delay(200);
   
 }
