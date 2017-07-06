@@ -10,7 +10,9 @@ int rightPixel = 119; // index of right pixel
 int rightSensor;      // input from right sensor
 int rightNormal = 0;  // normal value for right player 
 
-bool gameStart = 0; // game state
+enum gameStates { PREP, PLAY, POST };
+enum gameStates gameState = PREP; // game state
+
 bool flashOn = 0; // flash indicator
 
 void setup() {
@@ -31,63 +33,35 @@ void loop() {
   Serial.print( ", " );
   Serial.print( rightSensor - rightNormal);
   Serial.print( "\n" );
-  
-  if(!gameStart)
+
+  if(gameState == PREP) // game prep state
   {
-     // set normal values with button presses
+    // set normal values with button presses
     if( digitalRead(3) == LOW ) leftNormal = leftSensor;
     if( digitalRead(4) == LOW) rightNormal = rightSensor;
 
-    // flash pixels at each end
-    if(flashOn)
-    {
-      if(leftNormal == 0) strand.setPixelColor( 0, 0, 0, 255 ); 
-      if(rightNormal == 0) strand.setPixelColor( 119, 0, 0, 255);
-      flashOn = 0; 
-    } else  { 
-      if(leftNormal == 0) strand.setPixelColor( 0, 0, 255, 255 ); 
-      if(rightNormal == 0) strand.setPixelColor(119, 0, 255, 255);
-      flashOn = 1; 
-    }
+    ledUpdate();
 
-    // if a button has been pressed, stop flashing
-    if(leftNormal != 0) strand.setPixelColor(0, 255, 0, 0);
-    if(rightNormal != 0) strand.setPixelColor(119, 0, 255, 0);
-
-    // both buttons have been pressed
-    if(leftNormal != 0 && rightNormal != 0) gameStart = 1;
+    // both buttons have been pressed, start game
+    if(leftNormal != 0 && rightNormal != 0) gameState = PLAY;
   } 
-  else {
-    playerUpdate(); // update the state of both players
-    ledUpdate(); // Pixels update
+  else if (gameState == PLAY) // play state
+  {
+    playerUpdate();
+    ledUpdate();
 
-    /* NEEDS FIXING --------------------------------------------------------------------
-    // check for win
-    if(leftPixel == 119 || rightPixel == 0)
-    {
-      if(flashOn)
-      {
-        for(int i = 0; i < 119; ++i) strand.setPixelColor(i, 0, 0, 0);
-      } else {
-        if(leftPixel == 119) //left side wins 
-        {
-          for(int i = 0; i < 119; ++i) strand.setPixelColor(i, 255, 0, 0);
-        } 
-        else if (rightPixel == 0) //right side wins
-        {
-          for(int i = 0; i < 119; ++i) strand.setPixelColor(i, 0, 255, 0);
-        }
-      }
-  
-    gameStart = 0;
+    if(leftPixel == 119 || rightPixel == 0) gameState = POST;
+  } 
+  else if (gameState == POST) // post game state
+  {
+    ledUpdate();
+    
     leftNormal = 0;
-    rightNormal = 0;      
-    }
-
-    */ ----------------------------------------------------------------------------------
+    rightNormal = 0;
+    
+    gameState = PREP;
   }
 
   strand.show();
   delay(200);
-  
 }
