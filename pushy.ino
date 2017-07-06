@@ -36,6 +36,10 @@ void loop() {
 
   if(gameState == PREP) // game prep state
   {
+    leftPixel = 0;
+    rightPixel = 119;
+    
+    Serial.print("PREP");
     // set normal values with button presses
     if( digitalRead(3) == LOW ) leftNormal = leftSensor;
     if( digitalRead(4) == LOW) rightNormal = rightSensor;
@@ -47,6 +51,7 @@ void loop() {
   } 
   else if (gameState == PLAY) // play state
   {
+    Serial.print("PLAY");
     playerUpdate();
     ledUpdate();
 
@@ -54,6 +59,7 @@ void loop() {
   } 
   else if (gameState == POST) // post game state
   {
+    Serial.print("POST");
     ledUpdate();
     
     leftNormal = 0;
