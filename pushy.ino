@@ -19,6 +19,8 @@ void setup() {
   Serial.begin(9600);
   pinMode(3,INPUT); // left button 
   pinMode(4, INPUT); // right button
+  pinMode(5, INPUT); // reset button
+  
   pinMode(7,OUTPUT); // lights
   strand.begin();
 }
@@ -34,12 +36,12 @@ void loop() {
   Serial.print( rightSensor - rightNormal);
   Serial.print( "\n" );
 
+  // if reset button has been pressed, reset
+  if(digitalRead(5) == LOW) reset();
+ 
+
   if(gameState == PREP) // game prep state
-  {
-    leftPixel = 0;
-    rightPixel = 119;
-    
-    Serial.print("PREP");
+  {    
     // set normal values with button presses
     if( digitalRead(3) == LOW ) leftNormal = leftSensor;
     if( digitalRead(4) == LOW) rightNormal = rightSensor;
@@ -51,23 +53,30 @@ void loop() {
   } 
   else if (gameState == PLAY) // play state
   {
-    Serial.print("PLAY");
     playerUpdate();
     ledUpdate();
 
+    // a player has won the game
     if(leftPixel == 119 || rightPixel == 0) gameState = POST;
   } 
   else if (gameState == POST) // post game state
   {
-    Serial.print("POST");
     ledUpdate();
     
-    leftNormal = 0;
-    rightNormal = 0;
-    
-    gameState = PREP;
+    reset();
   }
 
   strand.show();
   delay(200);
 }
+
+// reset game and enter PREP state
+void reset()
+{
+  leftPixel = 0;
+  rightPixel = 119;
+  leftNormal = 0;
+  rightNormal = 0;
+  gameState = PREP;
+}
+
